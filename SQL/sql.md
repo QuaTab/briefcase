@@ -23,3 +23,28 @@
 - WHERE amount != (
 - SELECT MAX(amount)
 - FROM book );
+
+### 4.Найдите автора, у которого наибольшее количество постов с тегами. Выведите имя и фамилию автора, количество его таких постов и список этих постов.
+with maximum_tags as (
+	select first_name, last_name, count(1) as counter_tags, author_id
+	from posts
+		join post_tag on post_tag.post_id = posts.id
+		join tags on tags.id = post_tag.tag_id
+		join authors on authors.id = posts.author_id
+	group by author_id, first_name, last_name
+	order by counter_tags desc
+	limit 1
+	),
+	
+	count_posts as (
+	select count(author_id) as total, author_id from posts
+	group by author_id
+	order by total desc
+	limit 1
+	)
+
+select authors.first_name as Имя, authors.last_name as Фамилия, title as Сообщение, count_posts.total as Количество_сообщений
+from posts 
+	join maximum_tags on posts.author_id = maximum_tags.author_id
+	join authors on authors.id = posts.author_id
+	join count_posts on count_posts.author_id = posts.author_id
